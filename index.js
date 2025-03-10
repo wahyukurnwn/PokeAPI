@@ -82,6 +82,7 @@ async function getData() {
   }
 }
 // ***Suggest from AI
+// render function
 function renderPokemon(pokemonList, wrapperCard) {
   wrapperCard.innerHTML = "";
   pokemonList.forEach((pokemonData) => {
@@ -131,6 +132,7 @@ function renderPokemon(pokemonList, wrapperCard) {
 }
 
 // ***Suggest from AI
+// filter function
 function filterItem() {
   const filterName = inputName.value.toUpperCase();
   const selectedType = document.getElementById("types").value;
@@ -143,6 +145,7 @@ function filterItem() {
   renderPokemon(filterItems, wrapperCard);
 }
 
+// reset function
 function reset() {
   const wrapperCard = document.querySelector(".wrapper.grid");
   renderPokemon(pokemonDataList, wrapperCard);
