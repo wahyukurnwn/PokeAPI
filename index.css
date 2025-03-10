@@ -1,0 +1,109 @@
+@import url("https://fonts.googleapis.com/css2?family=Bangers&family=Chewy&family=Luckiest+Guy&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Press+Start+2P&family=Russo+One&display=swap");
+
+:root {
+  --ff-poppins: "Poppins", sans-serif;
+  --ff-press-start: "Press Start 2P", system-ui;
+  --ff-luckiest-guy: "Luckiest Guy", cursive;
+  --ff-bangers: "Bangers", system-ui;
+  --ff-chewy: "Chewy", system-ui;
+  --ff-russo-one: "Russo One", sans-serif;
+}
+
+body {
+  font-family: var(--ff-poppins);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--ff-bangers);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.25em;
+}
+
+select {
+  margin-block: 1em;
+}
+
+button {
+  background-color: rgb(14, 99, 196);
+  color: #fff;
+  border-radius: 0.5em;
+}
+
+.container {
+  width: 90%;
+  max-width: 60em;
+  padding: 2em;
+  margin: auto;
+  /* border: 2px solid red; */
+}
+
+.wrapper {
+  margin: auto;
+  padding: 1.2em;
+  /* margin-block: 1em; */
+  /* border: 2px solid blue; */
+}
+
+.txt-center {
+  text-align: center;
+}
+
+/* Utility */
+.grid {
+  display: grid;
+  gap: 0.35em;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  place-content: center;
+}
+
+.flex {
+  display: flex;
+  justify-content: center;
+  gap: 0.75em;
+}
+
+.card {
+  border-radius: 1em;
+  background-color: moccasin;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1em;
+  place-items: center;
+  transition: 0.3s;
+}
+
+.card:hover {
+  background-color: lightskyblue;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.types {
+  color: #fff;
+  padding: 0.25em 0.5em;
+  border-radius: 0.5em;
+  outline: #000 solid 1px;
+}
+
+/* Media Queries */
+@media (min-width: 30em) {
+  .grid {
+    gap: 1em;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 45em) {
+  .grid {
+    gap: 1.25em;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
