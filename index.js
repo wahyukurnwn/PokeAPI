@@ -1,5 +1,5 @@
-// API ENDPOINT
-const API_URL = `https://pokeapi.co/api/v2/pokemon?limit=30&offset=0`;
+/// API ENDPOINT
+const API_URL = `https://pokeapi.co/api/v2/pokemon?limit=3&offset=0`;
 
 const typeColors = {
   normal: "#C4A484",
@@ -24,133 +24,122 @@ const typeColors = {
   unknown: "transparent",
 };
 
-// ***Suggest from AI
-let pokemonDataList = [];
-// select Element
-const inputName = document.getElementById("myInput");
 const container = document.getElementById("container");
+let allPokemonData = []; // Menyimpan semua data Pokemon
 
 async function getData() {
   try {
-    // create new element for card-container
-    const wrapperCard = document.createElement("section");
-    wrapperCard.className = "wrapper grid";
-    wrapperCard.innerHTML = "";
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Failed to fetch data");
+    const data = await res.json();
 
-    // fetch data from API
-    const response = await fetch(API_URL);
+    // Fetch detail untuk semua Pokemon
+    const detailedPokemon = await Promise.all(
+      data.results.map(async (pokemon) => {
+        const response = await fetch(pokemon.url);
+        return response.json();
+      })
+    );
 
-    // check response
-    if (!response.ok) {
-      throw new Error("Couldn't fetch data");
-    }
-    const data = await response.json();
-    const { results } = data;
+    allPokemonData = detailedPokemon;
 
-    // Mapping to access items from URL
-    const pokemonPromise = results.map(async (item) => {
-      const pokemonResponse = await fetch(item.url);
-      const pokemonData = await pokemonResponse.json();
-      // console.log(pokemonData);
-      return pokemonData;
-    });
+    // Isi dropdown types
+    populateTypeFilter(detailedPokemon);
 
-    // *** New Suggest from AI
-    pokemonDataList = await Promise.all(pokemonPromise);
-    const typeSelect = document.getElementById("types");
-    const allTypes = new Set();
-
-    pokemonDataList.forEach((pokemon) => {
-      pokemon.types.forEach((item) => {
-        allTypes.add(item.type.name);
-      });
-    });
-    Array.from(allTypes)
-      .sort()
-      .forEach((type) => {
-        const option = document.createElement("option");
-        option.value = type;
-        option.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-        typeSelect.appendChild(option);
-      });
-
-    renderPokemon(pokemonDataList, wrapperCard);
-
-    container.append(wrapperCard);
+    // Render awal
+    renderCards(detailedPokemon);
   } catch (error) {
     console.error(error.message);
   }
 }
-// ***Suggest from AI
-// render function
-function renderPokemon(pokemonList, wrapperCard) {
-  wrapperCard.innerHTML = "";
-  pokemonList.forEach((pokemonData) => {
-    // create new element for card
+
+function populateTypeFilter(pokemonList) {
+  const typeSelect = document.getElementById("types");
+  const types = new Set();
+
+  pokemonList.forEach((pokemon) => {
+    pokemon.types.forEach((type) => types.add(type.type.name));
+  });
+
+  // Kosongkan options kecuali default
+  while (typeSelect.options.length > 1) {
+    typeSelect.remove(1);
+  }
+
+  // Tambahkan opsi baru
+  types.forEach((type) => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = type;
+    typeSelect.appendChild(option);
+  });
+}
+
+function renderCards(pokemonList) {
+  const existingWrapper = document.querySelector(".wrapper");
+  const wrapper = existingWrapper || document.createElement("section");
+
+  if (!existingWrapper) {
+    wrapper.className = "wrapper grid";
+    container.appendChild(wrapper);
+  }
+
+  // Clear existing content
+  wrapper.innerHTML = "";
+
+  pokemonList.forEach((pokemon) => {
     const card = document.createElement("div");
     card.className = "card";
 
-    // create heading
-    const name = document.createElement("h3");
-    name.textContent = `#${pokemonData.id} ${pokemonData.name}`;
+    // Title
+    const title = document.createElement("h4");
+    title.textContent = pokemon.name;
 
-    // create new element for imgCard
-    const imagePokemon = document.createElement("img");
-    imagePokemon.src = pokemonData.sprites.other["dream_world"].front_default;
-    imagePokemon.alt = pokemonData.name;
+    // Image
+    const image = document.createElement("img");
+    image.src = pokemon.sprites.other.dream_world.front_default || "";
+    image.alt = pokemon.name;
 
-    // get abilities from array
-    const descAbility = document.createElement("p");
-    pokemonData.abilities.forEach((item) => {
-      descAbility.textContent = `Ability: ${item.ability.name}`;
+    // Types
+    const typesWrapper = document.createElement("div");
+    typesWrapper.className = "flex";
+
+    pokemon.types.forEach((type) => {
+      const typeElement = document.createElement("div");
+      typeElement.textContent = type.type.name;
+      typeElement.className = "types";
+      typeElement.style.backgroundColor = typeColors[type.type.name] || typeColors.unknown;
+      typesWrapper.appendChild(typeElement);
     });
 
-    // get types from array
-    const typesPokemon = document.createElement("div");
-    typesPokemon.className = "flex";
-    pokemonData.types.forEach((item) => {
-      const types = document.createElement("span");
-      types.textContent = item.type.name;
-      types.className = "types";
-      types.style.backgroundColor = typeColors[types.textContent] || typeColors.unknown;
-
-      return typesPokemon.appendChild(types);
-    });
-
-    // getBaseStats
-    const statsPokemon = document.createElement("div");
-    pokemonData.stats.forEach((item) => {
-      const stats = document.createElement("p");
-      stats.textContent = `${item.stat.name.toUpperCase()}: ${item.base_stat}`;
-
-      return statsPokemon.appendChild(stats);
-    });
-
-    card.append(name, imagePokemon, descAbility, typesPokemon, statsPokemon);
-    wrapperCard.appendChild(card);
+    // Assemble card
+    card.append(title, image, typesWrapper);
+    wrapper.appendChild(card);
   });
 }
 
-// ***Suggest from AI
-// filter function
 function filterItem() {
-  const filterName = inputName.value.toUpperCase();
+  const searchTerm = document.getElementById("myInput").value.toLowerCase();
   const selectedType = document.getElementById("types").value;
-  const filterItems = pokemonDataList.filter((pokemon) => {
-    const nameMatch = pokemon.name.toUpperCase().includes(filterName);
+
+  const filtered = allPokemonData.filter((pokemon) => {
+    // Filter nama
+    const nameMatch = pokemon.name.toLowerCase().includes(searchTerm);
+
+    // Filter type
     const typeMatch = selectedType === "default" || pokemon.types.some((t) => t.type.name === selectedType);
+
     return nameMatch && typeMatch;
   });
-  const wrapperCard = document.querySelector(".wrapper.grid");
-  renderPokemon(filterItems, wrapperCard);
+
+  renderCards(filtered);
 }
 
-// reset function
 function reset() {
-  const wrapperCard = document.querySelector(".wrapper.grid");
-  renderPokemon(pokemonDataList, wrapperCard);
-  inputName.value = ``;
+  document.getElementById("myInput").value = "";
   document.getElementById("types").value = "default";
+  renderCards(allPokemonData);
 }
 
+// Initialize
 getData();
